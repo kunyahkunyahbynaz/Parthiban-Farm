@@ -1,4 +1,4 @@
-LESTARI AVIARY FARM — PAKEJ WEB APP
+Parthiban AVIARY FARM — PAKEJ WEB APP
 
 Kandungan:
 - index.html: aplikasi
