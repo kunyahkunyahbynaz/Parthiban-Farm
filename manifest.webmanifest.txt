@@ -1,6 +1,6 @@
 {
-  "name": "Lestari Aviary Farm",
-  "short_name": "Lestari Aviary",
+  "name": "Parthiban Aviary Farm",
+  "short_name": "Parthiban Aviary",
   "description": "Rekod anak budgie dan pemindahan ke sarang besar",
   "start_url": "./",
   "display": "standalone",
