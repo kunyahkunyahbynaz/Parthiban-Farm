@@ -1,0 +1,613 @@
+
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14532d">
+<title>Lestari Aviary Farm</title>
+<style>
+:root{--g:#14532d;--light:#dcfce7;--bg:#f3f7f2;--line:#dce5dc;--muted:#647067}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:#17251b;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif}
+header{background:linear-gradient(135deg,#14532d,#15803d);color:white;padding:22px 16px;border-radius:0 0 22px 22px}
+.brand{display:flex;align-items:center;gap:12px}
+#brandPhoto{width:66px;height:66px;border-radius:50%;object-fit:cover;border:2px solid rgba(255,255,255,.85);background:rgba(255,255,255,.15);cursor:pointer;flex:none}
+.brandText{min-width:0}
+h1{font-size:22px;margin:0 0 5px}header p{margin:0;color:#dcfce7;font-size:13px}
+.photoHint{font-size:11px;color:#dcfce7;margin-top:6px}
+main{max-width:780px;margin:auto;padding:14px 12px 40px}
+.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+.card,.stat{background:white;border:1px solid var(--line);border-radius:15px;padding:14px;margin-bottom:12px}
+.stat small{color:var(--muted);display:block;font-size:12px}
+.stat strong{display:block;color:var(--g);font-size:27px;margin-top:4px}
+h2{font-size:17px;margin:0 0 13px}
+h3{font-size:14px;margin:0 0 8px}
+.tabs{display:flex;gap:7px;overflow:auto;margin:15px 0}
+.tab{border:1px solid var(--line);background:white;color:var(--g);border-radius:20px;padding:10px 13px;font-weight:700;white-space:nowrap}
+.tab.active{background:var(--g);color:white}
+.panel{display:none}.panel.active{display:block}
+label{font-size:13px;font-weight:650;display:block;margin-bottom:6px}
+input,select{width:100%;border:1px solid #cbd8cb;border-radius:10px;padding:12px;font:inherit;background:white;min-height:43px}
+.field{margin-bottom:13px}
+button{cursor:pointer}
+.btn{background:var(--g);color:white;border:0;border-radius:10px;padding:12px 14px;font-weight:700;min-height:43px}
+.btn.alt{background:#e7f5e9;color:var(--g);border:1px solid #c8e8ce}
+.btn.danger{background:#fee2e2;color:#991b1b}
+.btn.gray{background:#f1f5f1;color:#23382a;border:1px solid var(--line)}
+.row{display:flex;gap:8px;align-items:center}.row>*{flex:1;min-width:0}
+.boxgrid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.boxbtn{background:white;border:1px solid var(--line);border-radius:10px;padding:9px 2px;text-align:center;min-height:60px;color:#17251b}
+.boxbtn strong{display:block;font-size:12px}.boxbtn span{font-size:11px;color:var(--muted)}
+.boxbtn.has{background:#dcfce7;border-color:#86c99b}.boxbtn.sel{outline:3px solid #15803d}
+.counter{display:flex;gap:9px;align-items:center}
+.counter button{width:48px;flex:none;font-size:21px;padding:6px}
+.num{flex:1;text-align:center;border:1px solid var(--line);background:#f8fbf8;border-radius:10px;font-size:24px;font-weight:800;padding:8px}
+.hint{font-size:12px;color:var(--muted);line-height:1.5}
+.bar{height:9px;background:#e5e7eb;border-radius:99px;overflow:hidden}
+.fill{height:100%;background:#16a34a;border-radius:99px}
+.item{padding:11px 0;border-bottom:1px solid var(--line);font-size:13px;line-height:1.5}
+.item:last-child{border:0}
+.item small{color:var(--muted)}
+footer{text-align:center;font-size:11px;color:var(--muted);padding:16px}
+@media(min-width:600px){.boxgrid{grid-template-columns:repeat(8,minmax(0,1fr))}.grid.four{grid-template-columns:repeat(4,minmax(0,1fr))}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <img id="brandPhoto" alt="Gambar burung Lestari Aviary Farm" title="Tekan untuk tukar gambar">
+    <div class="brandText">
+      <h1>Lestari Aviary Farm</h1>
+      <p>Pengurusan telur, anak budgie dan analisis breeding</p>
+      <div class="photoHint">Tekan gambar untuk pilih dari galeri</div>
+    </div>
+  </div>
+  <input type="file" id="brandPhotoInput" accept="image/*" hidden>
+</header>
+<main>
+<div class="grid">
+ <div class="stat"><small>Jumlah telur</small><strong id="sEggs">0</strong></div>
+ <div class="stat"><small>Anak dalam kotak</small><strong id="sChicks">0</strong></div>
+ <div class="stat"><small>Anak dalam sarang besar</small><strong id="sBig">0</strong></div>
+ <div class="stat"><small>Nestbox aktif</small><strong id="sActive">0 / 60</strong></div>
+</div>
+<nav class="tabs">
+<button class="tab active" data-tab="analysis">Analisis</button>
+<button class="tab" data-tab="boxes">Kotak sarang</button>
+<button class="tab" data-tab="move">Sarang besar & kematian</button>
+<button class="tab" data-tab="history">Sejarah</button>
+<button class="tab" data-tab="backup">Backup</button>
+</nav>
+<section class="panel active" id="panel-analysis">
+ <div class="card">
+  <h2>Analisis breeding — nestbox aktif</h2>
+  <p class="hint">Kotak aktif ialah kotak yang mempunyai sekurang-kurangnya satu telur atau anak. Kotak yang mempunyai kedua-duanya dikira sekali sahaja.</p>
+  <div class="grid">
+   <div class="stat"><small>Nestbox aktif</small><strong id="aActive">0</strong></div>
+   <div class="stat"><small>Peratus nestbox aktif</small><strong id="aPercent">0%</strong></div>
+   <div class="stat"><small>Purata telur / kotak bertelur</small><strong id="aEggAvg">0</strong></div>
+   <div class="stat"><small>Purata anak / kotak beranak</small><strong id="aChickAvg">0</strong></div>
+   <div class="stat"><small>Kotak ada telur</small><strong id="aEggBoxes">0</strong></div>
+   <div class="stat"><small>Kotak ada anak</small><strong id="aChickBoxes">0</strong></div>
+   <div class="stat"><small>Kotak ada telur + anak</small><strong id="aBoth">0</strong></div>
+   <div class="stat"><small>Jumlah anak hidup</small><strong id="aLive">0</strong></div>
+  </div>
+ </div>
+ <div class="card">
+  <h2>Analisis telur tak menetas</h2>
+  <div class="grid">
+   <div class="stat"><small>Jumlah telur tak menetas</small><strong id="aUnhatched">0</strong></div>
+   <div class="stat"><small>Peratus tak menetas</small><strong id="aUnhatchedPct">0%</strong></div>
+   <div class="stat"><small>Jumlah telur menetas direkodkan</small><strong id="aHatched">0</strong></div>
+   <div class="stat"><small>Jumlah hasil diketahui</small><strong id="aOutcomes">0</strong></div>
+  </div>
+  <p class="hint">Formula: telur tak menetas ÷ (telur menetas + telur tak menetas yang direkodkan) × 100. Telur yang masih belum diketahui hasilnya tidak dikira dalam peratus ini.</p>
+ </div>
+ <div class="card">
+  <h2>Analisis kematian anak</h2>
+  <div class="grid">
+   <div class="stat"><small>Jumlah anak mati direkodkan</small><strong id="aDead">0</strong></div>
+   <div class="stat"><small>Anggaran kadar kematian</small><strong id="aDeathPct">0%</strong></div>
+  </div>
+  <div class="row"><span class="hint">Kadar kematian</span><strong id="aDeathLabel">0%</strong></div>
+  <div class="bar"><div class="fill" id="aDeathBar" style="width:0%"></div></div>
+  <p class="hint">Formula: jumlah anak mati terkumpul ÷ (jumlah anak hidup semasa + jumlah anak mati terkumpul) × 100. Ini anggaran berdasarkan rekod yang disimpan, bukan kadar kematian satu kelompok tertentu.</p>
+ </div>
+ <div class="card">
+  <h2>Jumlah keseluruhan</h2>
+  <div class="grid">
+   <div class="stat"><small>Jumlah anak hidup</small><strong id="aTotalLive">0</strong></div>
+   <div class="stat"><small>Telur belum menetas</small><strong id="aTotalEggs">0</strong></div>
+  </div>
+ </div>
+</section>
+<section class="panel" id="panel-boxes">
+ <div class="card">
+  <h2>Pilih kotak sarang</h2>
+  <div class="boxgrid" id="boxgrid"></div>
+  <p class="hint">Tekan kotak untuk mengemas kini rekodnya.</p>
+ </div>
+ <div class="card">
+  <h2 id="boxTitle">Kotak N001</h2>
+  <div class="field">
+   <label>Bilangan telur</label>
+   <div class="counter"><button class="btn alt" id="eggMinus">−</button><div class="num" id="eggNum">0</div><button class="btn alt" id="eggPlus">+</button></div>
+  </div>
+  <div class="field">
+   <label>Bilangan anak dalam kotak</label>
+   <div class="counter"><button class="btn alt" id="chickMinus">−</button><div class="num" id="chickNum">0</div><button class="btn alt" id="chickPlus">+</button></div>
+  </div>
+  <div class="field">
+   <label>Bilangan telur yang menetas</label>
+   <div class="counter"><button class="btn alt" id="hatchMinus">−</button><div class="num" id="hatchNum">0</div><button class="btn alt" id="hatchPlus">+</button></div>
+   <p class="hint">Rekod penetasan akan menolak telur dan menambah anak secara automatik.</p>
+   <button class="btn alt" id="recordHatch" style="width:100%">Rekod telur menetas</button>
+  </div>
+  <div class="field">
+   <label>Bilangan telur tak menetas</label>
+   <div class="counter"><button class="btn alt" id="unhatchedMinus">−</button><div class="num" id="unhatchedNum">0</div><button class="btn alt" id="unhatchedPlus">+</button></div>
+   <p class="hint">Rekod ini akan menolak telur daripada kotak dan mengira jumlah serta peratus telur tak menetas.</p>
+   <button class="btn danger" id="recordUnhatched" style="width:100%">Rekod telur tak menetas</button>
+  </div>
+  <div class="field"><label>Catatan</label><input id="note" maxlength="120" placeholder="Catatan pilihan"></div>
+  <button class="btn" id="saveBox" style="width:100%">Simpan rekod kotak</button>
+ </div>
+</section>
+<section class="panel" id="panel-move">
+ <div class="card">
+  <h2>Pindah anak ke sarang besar</h2>
+  <div class="field"><label>Kotak asal</label><select id="fromBox"></select></div>
+  <p class="hint" id="fromAvailable"></p>
+  <div class="field"><label>Bilangan anak untuk dipindahkan</label><input id="moveQty" type="number" min="1" value="1"></div>
+  <button class="btn" id="doMove" style="width:100%">Pindahkan anak</button>
+ </div>
+ <div class="card">
+  <h2>Sarang besar</h2>
+  <div class="stat"><small>Bilangan anak hidup sekarang</small><strong id="bigNum">0</strong></div>
+  <div class="stat"><small>Jumlah anak mati di sarang besar</small><strong id="bigDeathsTotal">0</strong></div>
+  <div class="row"><button class="btn alt" id="bigMinus">− 1 anak</button><button class="btn alt" id="bigPlus">+ 1 anak</button></div>
+  <p class="hint">Pembetulan manual akan direkodkan dalam sejarah.</p>
+ </div>
+ <div class="card">
+  <h2>Keluarkan anak untuk jualan</h2>
+  <div class="stat"><small>Jumlah anak telah dijual</small><strong id="soldTotal">0</strong></div>
+  <p class="hint" id="saleAvailable">Anak tersedia dalam sarang besar: 0</p>
+  <div class="field"><label>Bilangan anak keluar untuk jualan</label><input id="saleQty" type="number" min="1" step="1" value="1" inputmode="numeric"></div>
+  <button class="btn" id="recordSale" style="width:100%">Rekod keluaran jualan</button>
+  <p class="hint">Kuantiti sahaja. Tiada harga atau nama pembeli diperlukan. Rekod jualan akan mengurangkan jumlah anak dalam sarang besar dan disimpan dalam sejarah serta backup JSON.</p>
+ </div>
+ <div class="card">
+  <h2>Rekod anak mati</h2>
+  <div class="field"><label>Lokasi</label><select id="deathLoc"><option value="box">Kotak sarang</option><option value="big">Sarang besar</option></select></div>
+  <div class="field" id="deathBoxField"><label>Pilih kotak</label><select id="deathBox"></select></div>
+  <div class="field"><label>Bilangan anak mati</label><input id="deathQty" type="number" min="1" value="1"></div>
+  <button class="btn danger" id="recordDeath" style="width:100%">Rekod kematian</button>
+  <p class="hint">Jumlah anak akan dikurangkan dan sejarah kematian disimpan.</p>
+ </div>
+</section>
+<section class="panel" id="panel-history">
+ <div class="card"><div class="row"><h2 style="flex:1">Sejarah rekod</h2><button class="btn gray" id="clearHistory">Kosongkan sejarah</button></div><div id="historyList"></div></div>
+</section>
+<section class="panel" id="panel-backup">
+ <div class="card">
+  <h2>Backup & pemulihan</h2>
+  <p class="hint">Simpan backup sebelum mengemas kini website atau menukar telefon. Backup JSON termasuk rekod telur tak menetas dan gambar header.</p>
+  <button class="btn" id="exportJson" style="width:100%;margin-bottom:9px">Muat turun backup JSON</button>
+  <button class="btn alt" id="exportCsv" style="width:100%;margin-bottom:12px">Eksport kiraan CSV</button>
+  <div class="field"><label>Pulihkan backup JSON</label><input type="file" id="importFile" accept=".json,application/json"></div>
+  <button class="btn danger" id="resetAll" style="width:100%">Padam semua data</button>
+  <p class="hint">Data disimpan pada pelayar/peranti ini. Gambar header disimpan berasingan daripada kiraan dan dimasukkan ke backup JSON. Jangan padam data tanpa membuat backup.</p>
+ </div>
+</section>
+<footer>Lestari Aviary Farm</footer>
+</main>
+<script>
+const KEY='lestari_aviary_farm_pwa_v1';
+const PHOTO_KEY='lestari_aviary_header_photo_v1';
+const IDS=Array.from({length:60},(_,i)=>'N'+String(i+1).padStart(3,'0'));
+
+function fresh(){
+ return {version:5,boxes:IDS.map(id=>({id,n:0,eggs:0,note:''})),big:0,moves:[],deaths:[],hatches:[],unhatched:[],sales:[],adjustments:[]}
+}
+
+function load(){
+ try{
+  const d=JSON.parse(localStorage.getItem(KEY));
+  if(d&&Array.isArray(d.boxes)&&d.boxes.length===60){
+   d.boxes=d.boxes.map((b,i)=>({id:IDS[i],n:Math.max(0,Number(b.n)||0),eggs:Math.max(0,Number(b.eggs)||0),note:String(b.note||'')}));
+   d.big=Math.max(0,Number(d.big)||0);
+   d.moves=Array.isArray(d.moves)?d.moves:[];
+   d.deaths=Array.isArray(d.deaths)?d.deaths:[];
+   d.hatches=Array.isArray(d.hatches)?d.hatches:[];
+   d.unhatched=Array.isArray(d.unhatched)?d.unhatched:[];
+   d.sales=Array.isArray(d.sales)?d.sales:[];
+   d.adjustments=Array.isArray(d.adjustments)?d.adjustments:[];
+   d.version=5;
+   return d;
+  }
+ }catch(e){}
+ return fresh();
+}
+
+let data=load(),selected='N001',draftEgg=0,draftChick=0,hatchQty=0,unhatchedQty=0;
+const $=id=>document.getElementById(id);
+const box=id=>data.boxes.find(b=>b.id===id);
+const totalEggs=()=>data.boxes.reduce((s,b)=>s+b.eggs,0);
+const totalBoxChicks=()=>data.boxes.reduce((s,b)=>s+b.n,0);
+const totalDead=()=>data.deaths.reduce((s,d)=>s+(Number(d.qty)||0),0);
+const totalBigDead=()=>data.deaths.filter(d=>d.location==='sarang besar'||d.location==='big').reduce((s,d)=>s+(Number(d.qty)||0),0);
+const totalUnhatched=()=>data.unhatched.reduce((s,d)=>s+(Number(d.qty)||0),0);
+const totalSold=()=>data.sales.reduce((s,d)=>s+(Number(d.qty)||0),0);
+const totalHatched=()=>data.hatches.reduce((s,d)=>s+(Number(d.qty)||0),0);
+const activeBoxes=()=>data.boxes.filter(b=>b.eggs>0||b.n>0);
+const stamp=()=>new Date().toLocaleString('ms-MY');
+
+function save(){
+ localStorage.setItem(KEY,JSON.stringify(data));
+ render();
+}
+
+function safe(v){
+ return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function render(){
+ const eggs=totalEggs(),bc=totalBoxChicks(),big=data.big,live=bc+big,dead=totalDead();
+ const active=activeBoxes().length,eggBoxes=data.boxes.filter(b=>b.eggs>0).length,chickBoxes=data.boxes.filter(b=>b.n>0).length,both=data.boxes.filter(b=>b.eggs>0&&b.n>0).length;
+ const deathPct=live+dead?dead/(live+dead)*100:0;
+ const unhatched=totalUnhatched(),hatched=totalHatched(),outcomes=unhatched+hatched,unhatchedPct=outcomes?unhatched/outcomes*100:0;
+
+ $('sEggs').textContent=eggs;
+ $('sChicks').textContent=bc;
+ $('sBig').textContent=big;
+ $('sActive').textContent=active+' / 60';
+
+ $('aActive').textContent=active;
+ $('aPercent').textContent=(active/60*100).toFixed(1)+'%';
+ $('aEggAvg').textContent=eggBoxes?(eggs/eggBoxes).toFixed(2):'0.00';
+ $('aChickAvg').textContent=chickBoxes?(bc/chickBoxes).toFixed(2):'0.00';
+ $('aEggBoxes').textContent=eggBoxes;
+ $('aChickBoxes').textContent=chickBoxes;
+ $('aBoth').textContent=both;
+ $('aLive').textContent=live;
+ $('aDead').textContent=dead;
+ $('aDeathPct').textContent=deathPct.toFixed(1)+'%';
+ $('aDeathLabel').textContent=deathPct.toFixed(1)+'%';
+ $('aDeathBar').style.width=Math.min(100,deathPct)+'%';
+ $('aTotalLive').textContent=live;
+ $('aTotalEggs').textContent=eggs;
+ $('aUnhatched').textContent=unhatched;
+ $('aUnhatchedPct').textContent=unhatchedPct.toFixed(1)+'%';
+ $('aHatched').textContent=hatched;
+ $('aOutcomes').textContent=outcomes;
+
+ $('boxgrid').innerHTML=data.boxes.map(b=>`<button class="boxbtn ${b.eggs||b.n?'has':''} ${b.id===selected?'sel':''}" data-id="${b.id}"><strong>${b.id}</strong><span>${b.eggs}T · ${b.n}A</span></button>`).join('');
+ document.querySelectorAll('[data-id]').forEach(el=>el.onclick=()=>selectBox(el.dataset.id));
+
+ $('boxTitle').textContent='Kotak '+selected;
+ $('eggNum').textContent=draftEgg;
+ $('chickNum').textContent=draftChick;
+ $('hatchNum').textContent=hatchQty;
+ $('unhatchedNum').textContent=unhatchedQty;
+
+ // PEMBETULAN: simpan pilihan kotak sebelum dropdown dibina semula.
+ const fromSelect=$('fromBox');
+ const savedFrom=fromSelect.value || 'N001';
+
+ fromSelect.innerHTML=data.boxes.map(b=>
+  `<option value="${b.id}">${b.id} (${b.n} anak)</option>`
+ ).join('');
+
+ // Pulihkan pilihan asal supaya tidak kembali ke N001 setiap kali render().
+ fromSelect.value=box(savedFrom)?savedFrom:'N001';
+
+ $('deathBox').innerHTML=data.boxes.map(b=>
+  `<option value="${b.id}">${b.id} (${b.n} anak)</option>`
+ ).join('');
+
+ $('fromAvailable').textContent=
+  'Anak tersedia dalam kotak: '+box(fromSelect.value).n;
+
+ $('bigNum').textContent=big;
+ $('bigDeathsTotal').textContent=totalBigDead();
+ $('soldTotal').textContent=totalSold();
+ $('saleAvailable').textContent='Anak tersedia dalam sarang besar: '+big;
+
+ const events=[
+  ...data.moves.map(x=>({...x,type:'Pindah'})),
+  ...data.deaths.map(x=>({...x,type:'Kematian'})),
+  ...data.hatches.map(x=>({...x,type:'Menetas'})),
+  ...data.unhatched.map(x=>({...x,type:'Telur tak menetas'})),
+  ...data.sales.map(x=>({...x,type:'Keluaran jualan'})),
+  ...data.adjustments.map(x=>({...x,type:'Pembetulan'}))
+ ].sort((a,b)=>(b.ts||0)-(a.ts||0));
+
+ $('historyList').innerHTML=events.length?events.map(x=>
+  `<div class="item"><strong>${safe(x.type)}: ${safe(x.description||((x.qty||'')+' '+(x.from||x.location||'')))}</strong><br><small>${safe(x.date||'')}</small></div>`
+ ).join(''):'<p class="hint">Belum ada sejarah.</p>';
+
+ $('unhatchedPlus').disabled=unhatchedQty>=box(selected).eggs;
+ $('unhatchedMinus').disabled=unhatchedQty<=0;
+}
+
+function selectBox(id){
+ selected=id;
+ draftEgg=box(id).eggs;
+ draftChick=box(id).n;
+ hatchQty=0;
+ unhatchedQty=0;
+ $('note').value=box(id).note||'';
+ render();
+}
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{
+ document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('active',x===t));
+ document.querySelectorAll('.panel').forEach(x=>x.classList.toggle('active',x.id==='panel-'+t.dataset.tab));
+});
+
+$('eggMinus').onclick=()=>{draftEgg=Math.max(0,draftEgg-1);render()};
+$('eggPlus').onclick=()=>{draftEgg=Math.min(999,draftEgg+1);render()};
+$('chickMinus').onclick=()=>{draftChick=Math.max(0,draftChick-1);render()};
+$('chickPlus').onclick=()=>{draftChick=Math.min(999,draftChick+1);render()};
+
+$('saveBox').onclick=()=>{
+ box(selected).eggs=draftEgg;
+ box(selected).n=draftChick;
+ box(selected).note=$('note').value.trim();
+ hatchQty=Math.min(hatchQty,draftEgg);
+ unhatchedQty=Math.min(unhatchedQty,draftEgg);
+ save();
+ alert('Rekod '+selected+' disimpan.');
+};
+
+$('hatchMinus').onclick=()=>{hatchQty=Math.max(0,hatchQty-1);render()};
+$('hatchPlus').onclick=()=>{hatchQty=Math.min(box(selected).eggs,hatchQty+1);render()};
+
+$('recordHatch').onclick=()=>{
+ const b=box(selected);
+ if(hatchQty<1)return alert('Pilih bilangan telur yang menetas.');
+ if(hatchQty>b.eggs)return alert('Telur tidak mencukupi.');
+ if(!confirm('Rekod '+hatchQty+' telur menetas dalam '+selected+'?'))return;
+ b.eggs-=hatchQty;
+ b.n+=hatchQty;
+ data.hatches.push({date:stamp(),ts:Date.now(),qty:hatchQty,from:selected,description:hatchQty+' telur menetas dalam '+selected});
+ draftEgg=b.eggs;
+ draftChick=b.n;
+ hatchQty=0;
+ unhatchedQty=Math.min(unhatchedQty,b.eggs);
+ save();
+ alert('Rekod penetasan disimpan.');
+};
+
+$('unhatchedMinus').onclick=()=>{unhatchedQty=Math.max(0,unhatchedQty-1);render()};
+$('unhatchedPlus').onclick=()=>{unhatchedQty=Math.min(box(selected).eggs,unhatchedQty+1);render()};
+
+$('recordUnhatched').onclick=()=>{
+ const b=box(selected);
+ if(unhatchedQty<1)return alert('Pilih bilangan telur tak menetas.');
+ if(unhatchedQty>b.eggs)return alert('Telur tidak mencukupi dalam kotak ini.');
+ if(!confirm('Rekod '+unhatchedQty+' telur tak menetas dalam '+selected+'?'))return;
+ data.unhatched.push({date:stamp(),ts:Date.now(),qty:unhatchedQty,from:selected,description:unhatchedQty+' telur tak menetas dalam '+selected});
+ b.eggs-=unhatchedQty;
+ draftEgg=b.eggs;
+ unhatchedQty=0;
+ hatchQty=Math.min(hatchQty,b.eggs);
+ save();
+ alert('Rekod telur tak menetas disimpan.');
+};
+
+// PEMBETULAN: apabila kotak dipilih, kemas kini baki sahaja.
+// Jangan panggil render() di sini kerana ia membina semula dropdown.
+$('fromBox').onchange=()=>{
+ const id=$('fromBox').value;
+ $('fromAvailable').textContent='Anak tersedia dalam kotak: '+box(id).n;
+};
+
+$('doMove').onclick=()=>{
+ const id=$('fromBox').value;
+ const b=box(id);
+ const q=Math.floor(Number($('moveQty').value));
+
+ if(!Number.isFinite(q)||q<1)return alert('Masukkan bilangan anak yang sah.');
+ if(q>b.n)return alert('Bilangan anak tidak mencukupi dalam '+id+'.');
+ if(!confirm('Pindahkan '+q+' anak dari '+id+' ke sarang besar?'))return;
+
+ b.n-=q;
+ data.big+=q;
+ data.moves.push({date:stamp(),ts:Date.now(),qty:q,from:id,description:q+' anak dipindahkan dari '+id+' ke sarang besar'});
+
+ if(selected===id)draftChick=b.n;
+
+ save();
+ alert('Pemindahan berjaya direkodkan.');
+};
+
+$('bigMinus').onclick=()=>{
+ if(data.big<1)return alert('Tiada anak untuk dikurangkan.');
+ if(!confirm('Kurangkan 1 anak daripada sarang besar?'))return;
+ data.big--;
+ data.adjustments.push({date:stamp(),ts:Date.now(),description:'Pembetulan sarang besar: −1 anak'});
+ save();
+};
+
+$('bigPlus').onclick=()=>{
+ data.big++;
+ data.adjustments.push({date:stamp(),ts:Date.now(),description:'Pembetulan sarang besar: +1 anak'});
+ save();
+};
+
+$('recordSale').onclick=()=>{
+ const q=Math.floor(Number($('saleQty').value));
+ if(!Number.isFinite(q)||q<1)return alert('Masukkan bilangan anak untuk jualan yang sah.');
+ if(q>data.big)return alert('Bilangan anak dalam sarang besar tidak mencukupi.');
+ if(!confirm('Keluarkan '+q+' anak dari sarang besar untuk jualan?'))return;
+ data.big-=q;
+ data.sales.push({date:stamp(),ts:Date.now(),qty:q,description:q+' anak dikeluarkan untuk jualan'});
+ save();
+ $('saleQty').value=1;
+ alert('Keluaran jualan direkodkan. Baki anak dalam sarang besar telah dikemas kini.');
+};
+
+$('deathLoc').onchange=()=>{
+ $('deathBoxField').style.display=$('deathLoc').value==='box'?'block':'none';
+};
+
+$('recordDeath').onclick=()=>{
+ const loc=$('deathLoc').value;
+ const q=Math.floor(Number($('deathQty').value));
+ if(!Number.isFinite(q)||q<1)return alert('Masukkan bilangan anak mati yang sah.');
+
+ const id=$('deathBox').value;
+ const target=loc==='big'?null:box(id);
+ const available=loc==='big'?data.big:target.n;
+
+ if(q>available)return alert('Bilangan anak tidak mencukupi di lokasi tersebut.');
+
+ const place=loc==='big'?'sarang besar':id;
+ if(!confirm('Rekod '+q+' anak mati di '+place+'?'))return;
+
+ if(loc==='big')data.big-=q;
+ else target.n-=q;
+
+ data.deaths.push({date:stamp(),ts:Date.now(),qty:q,location:loc==='big'?'sarang besar':id,description:q+' anak mati di '+place});
+
+ if(loc==='box'&&selected===id)draftChick=target.n;
+
+ save();
+ alert('Kematian direkodkan.');
+};
+
+function download(name,content,type){
+ const blob=new Blob([content],{type});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');
+ a.href=url;
+ a.download=name;
+ document.body.appendChild(a);
+ a.click();
+ a.remove();
+ setTimeout(()=>URL.revokeObjectURL(url),1000);
+}
+
+$('exportJson').onclick=()=>{
+ const backup={...data,headerPhoto:localStorage.getItem(PHOTO_KEY)||''};
+ download('backup-lestari-aviary-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(backup,null,2),'application/json');
+};
+
+$('exportCsv').onclick=()=>{
+ const rows=[['Kotak','Telur','Anak','Catatan','Jumlah telur tak menetas direkodkan'],...data.boxes.map(b=>[b.id,b.eggs,b.n,b.note,data.unhatched.filter(x=>x.from===b.id).reduce((s,x)=>s+(Number(x.qty)||0),0)])];
+ download('lestari-aviary-kotak.csv',rows.map(r=>r.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n'),'text/csv;charset=utf-8');
+};
+
+$('importFile').onchange=async e=>{
+ const f=e.target.files[0];
+ if(!f)return;
+
+ try{
+  const d=JSON.parse(await f.text());
+  if(!Array.isArray(d.boxes)||d.boxes.length!==60||!Array.isArray(d.moves))throw Error();
+  if(!confirm('Pulihkan backup dan gantikan data semasa?'))return;
+
+  data={
+   version:5,
+   boxes:d.boxes.map((b,i)=>({id:IDS[i],n:Math.max(0,Number(b.n)||0),eggs:Math.max(0,Number(b.eggs)||0),note:String(b.note||'')})),
+   big:Math.max(0,Number(d.big)||0),
+   moves:d.moves,
+   deaths:Array.isArray(d.deaths)?d.deaths:[],
+   hatches:Array.isArray(d.hatches)?d.hatches:[],
+   unhatched:Array.isArray(d.unhatched)?d.unhatched:[],
+   sales:Array.isArray(d.sales)?d.sales:[],
+   adjustments:Array.isArray(d.adjustments)?d.adjustments:[]
+  };
+
+  if(typeof d.headerPhoto==='string'&&d.headerPhoto.startsWith('data:image/'))localStorage.setItem(PHOTO_KEY,d.headerPhoto);
+  showBrandPhoto(localStorage.getItem(PHOTO_KEY)||'');
+  selected='N001';
+  draftEgg=box(selected).eggs;
+  draftChick=box(selected).n;
+  hatchQty=0;
+  unhatchedQty=0;
+  $('note').value=box(selected).note||'';
+  save();
+  alert('Backup dipulihkan.');
+ }catch(err){
+  alert('Fail backup tidak sah atau rosak.');
+ }
+ e.target.value='';
+};
+
+$('clearHistory').onclick=()=>{
+ if(!confirm('Kosongkan sejarah sahaja? Kiraan telur dan anak tidak berubah. Rekod sejarah menetas dan telur tak menetas akan turut dibuang, jadi statistik terkumpulnya akan kembali sifar.'))return;
+ data.moves=[];
+ data.deaths=[];
+ data.hatches=[];
+ data.unhatched=[];
+ data.sales=[];
+ data.adjustments=[];
+ save();
+};
+
+$('resetAll').onclick=()=>{
+ if(!confirm('AMARAN: Padam semua rekod telur, anak, sarang besar dan sejarah?'))return;
+ if(!confirm('Pengesahan terakhir. Pastikan backup sudah dibuat.'))return;
+ data=fresh();
+ selected='N001';
+ draftEgg=draftChick=hatchQty=unhatchedQty=0;
+ save();
+ alert('Data dikosongkan.');
+};
+
+function showBrandPhoto(src){
+ const el=$('brandPhoto');
+ if(src){el.src=src}else{el.removeAttribute('src')}
+}
+
+$('brandPhoto').onclick=()=>$('brandPhotoInput').click();
+
+$('brandPhotoInput').onchange=async e=>{
+ const file=e.target.files&&e.target.files[0];
+ if(!file)return;
+ if(!file.type.startsWith('image/')){alert('Sila pilih fail gambar.');e.target.value='';return}
+
+ try{
+  const src=await new Promise((resolve,reject)=>{
+   const r=new FileReader();
+   r.onload=()=>resolve(r.result);
+   r.onerror=reject;
+   r.readAsDataURL(file);
+  });
+
+  const img=new Image();
+  img.src=src;
+  await new Promise((resolve,reject)=>{img.onload=resolve;img.onerror=reject});
+
+  const scale=Math.min(1,500/Math.max(img.width,img.height));
+  const canvas=document.createElement('canvas');
+  canvas.width=Math.max(1,Math.round(img.width*scale));
+  canvas.height=Math.max(1,Math.round(img.height*scale));
+  canvas.getContext('2d').drawImage(img,0,0,canvas.width,canvas.height);
+
+  const compressed=canvas.toDataURL('image/jpeg',0.75);
+
+  try{
+   localStorage.setItem(PHOTO_KEY,compressed);
+   showBrandPhoto(compressed);
+   alert('Gambar header berjaya disimpan. Buat backup JSON untuk menyimpan salinan gambar.');
+  }catch(storageError){
+   alert('Storan pelayar penuh. Buat backup dan cuba gambar yang lebih kecil.');
+  }
+ }catch(err){
+  alert('Gambar tidak dapat dibaca. Cuba pilih gambar lain.');
+ }
+ e.target.value='';
+};
+
+showBrandPhoto(localStorage.getItem(PHOTO_KEY)||'');
+draftEgg=box(selected).eggs;
+draftChick=box(selected).n;
+$('note').value=box(selected).note||'';
+render();
+</script>
+</body>
+</html>
